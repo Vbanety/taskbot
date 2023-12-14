@@ -8,7 +8,6 @@ module.exports = {
     type: ApplicationCommandType.ChatInput,
     },
     async execute(interaction) {
-        // read .md file and send it as a message
         const string = fs.readFileSync('./commands.md', 'utf8');
 
         const embed = new EmbedBuilder()

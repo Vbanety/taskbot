@@ -43,7 +43,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     const { commandName, options } = interaction;
 
-    // Command handler files
     const commandFiles = await fs.readdir(path.join(__dirname, 'commands'));
 
     for (const file of commandFiles) {
@@ -85,7 +84,5 @@ if(interaction.isAutocomplete()) {
     );
     }
 });
-
-// event when registering commands
 
 client.login(TOKEN);
