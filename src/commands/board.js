@@ -262,19 +262,12 @@ module.exports = {
             const boardName = options.getString('board-name');
             const privateBoard = options.getBoolean('private') ?? false;
         
-            const icons = {
-                low: '<:L:1165393649392173137><:Lo:1165393695428849744><:W:1165393706514382848>',
-                medium: '<:M:1165393719596417138><:Me:1165393754832764928><:diu:1165393762407698565><:m:1165393771790344312>',
-                high: '<:__:1165393529959366707><:Hi:1165393553011261481><:gh:1165393574842597467>'
-            }
-            // create Board class to handle board operations (create, delete, get, etc.) and Task class inside Board class to handle task operations (add, remove, etc.)
             try {
                 const from = options.getString('from');
                 const to = options.getString('to');
                 const board = await getBoard(boardName, interaction.user.id) || await getBoard(from,interaction.user.id) || await getBoard(to,interaction.user.id) || null;
                 const isAdmin = board?.user === interaction.user.id;
 
-                // Check if the user initiating the command is a member of the board
                 const isMember = board?.members.some(member => member.id === interaction.user.id);    
 
                 if (subcommand === 'create') {
@@ -359,7 +352,7 @@ module.exports = {
                     const description = options.getString('description');
                     const priority = options.getString('priority');
                 
-                    await addTaskToBoard(boardName, { name: taskName, description, status: 'todo', priority, last_updated: Date.now(), by: interaction.user.id })
+                    await addTaskToBoard(boardName, { name: taskName, description, status: 'todo', priority, last_updated: Date.now(), by: interaction.user.id },interaction.user.id)
                         .then(() => {
                             const embed = new EmbedBuilder()
                                 .setTitle('Task added!')
@@ -567,7 +560,24 @@ module.exports = {
                             .setColor('#00ff00');
                         interaction.reply({ embeds: [embed] });
                     }
-                }                
+                }    
+                if(subcommand === 'list-tasks') {
+                    await listTasks(boardName, interaction.user.id)
+                        .then(tasks => {
+                            const embed = new EmbedBuilder()
+                                .setTitle(`Tasks from board **${boardName}**`)
+                                .setDescription(tasks.length === 0 ? 'No tasks found!' : tasks.map((t, index) => `## Task ${index + 1}\n\n- Name: ${t.name}\n- Description: ${t.description}\n- Status: ${t.status}\n- Priority: ${t.priority}\n- Last updated: ${new Date(t.last_updated).toLocaleString()}\n- By: <@${t.by}>`).join('\n\n'))
+                                .setColor('#00ff00');
+                            interaction.reply({ embeds: [embed] });
+                        })
+                        .catch(error => {
+                            const errorEmbed = new EmbedBuilder()
+                                .setTitle('Error')
+                                .setDescription(error.message)
+                                .setColor('#ff0000');
+                            interaction.reply({ embeds: [errorEmbed] });
+                        });
+                }            
     } catch (error) {
         console.error(error);
     }
